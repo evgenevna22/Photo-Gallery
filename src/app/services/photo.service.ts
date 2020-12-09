@@ -93,6 +93,25 @@ export class PhotoService {
     };
   }
 
+  public async deletePicture(photo: Photo, position: number): Promise<void> {
+    // Remove this photo from the Photos reference data array
+    this.photos.splice(position, 1);
+
+    // Update photos array cache by overwriting the existing photo array
+    Storage.set({
+      key: PHOTO_STORAGE,
+      value: JSON.stringify(this.photos)
+    });
+
+    // delete photo file from filesystem
+    const filename = photo.filepath.substr(photo.filepath.lastIndexOf('/') + 1);
+
+    await Filesystem.deleteFile({
+      path: filename,
+      directory: FilesystemDirectory.Data
+    });
+  }
+
   private async readAsBase64(cameraPhoto: CameraPhoto): Promise<string> {
     if (this.platform.is('hybrid')) {
       // Read the file into base64 format
